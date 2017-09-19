@@ -1,0 +1,22 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CURRENT_DIR=`pwd`
+
+echo "Compiling application"
+cd ${DIR}
+sed -i -e 's/ private final int nTileSize = 16;/ private int nTileSize = 256;/g' src/main/java/es/bsc/mobile/apps/bs/Params.java
+sed -i -e 's/ private final int outSizeI = 512;/ private int outSizeI = 1024;/g' src/main/java/es/bsc/mobile/apps/bs/Params.java
+sed -i -e 's/ private final int outSizeJ = 512;/ private int outSizeJ = 1024;/g' src/main/java/es/bsc/mobile/apps/bs/Params.java
+
+
+mvn -q -o -Dmaven.test.skip=true clean
+mvn -q -o -Dmaven.test.skip=true compile
+mvn -q -o -Dmaven.test.skip=true package
+
+echo "Preparing logcat"
+/home/flordan/Android/Android-4.4/sdk/platform-tools/adb logcat -c
+/usr/bin/konsole --new-tab --hold -e /home/flordan/Android/Android-4.4/sdk/platform-tools/adb logcat -v raw System.out:V *:S
+mvn android:deploy
+mvn android:run
+cd ${CURRENT_DIR}

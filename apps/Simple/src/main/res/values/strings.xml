@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Simple</string>
+    <string name="start_service">Increment</string>
+    <string name="stop_service">Stop Service</string>
+    <string name="result">Result:</string>
+
+</resources>

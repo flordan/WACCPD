@@ -1,0 +1,110 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="${relativePackage}.${activityClass}" >
+
+
+    <LinearLayout
+        android:id="@+id/portWorker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/portWorker_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Port Worker: "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/portWorker_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberSigned"
+            android:text="43001" >
+        </EditText>
+    </LinearLayout>
+    
+
+    <LinearLayout
+        android:id="@+id/cores"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/portWorker" >
+
+        <TextView
+            android:id="@+id/cores_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CPU Cores: "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/cores_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberSigned"
+            android:text="4" >
+        </EditText>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/ipMaster"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cores" >
+
+        <TextView
+            android:id="@+id/ipMaster_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Master IP Address: "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/ipMaster_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text"
+            android:text="" >
+        </EditText>
+    </LinearLayout>
+    
+        <LinearLayout
+        android:id="@+id/portMaster"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ipMaster" >
+
+        <TextView
+            android:id="@+id/portMaster_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Port Master: "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/portMaster_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberSigned"
+            android:text="43000" >
+        </EditText>
+    </LinearLayout>
+    
+    
+    <Button
+        android:id="@+id/start_service"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/portMaster"
+        android:onClick="start"
+        android:text="Start Worker Process" />
+
+   
+</RelativeLayout>
