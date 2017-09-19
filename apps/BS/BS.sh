@@ -18,17 +18,8 @@ DYNAMIC_SCHEDULING_POLICY=""  # DEFAULT VALUE IS ENERGY
 #DYNAMIC_SCHEDULING_POLICY="performance"
 
 
-#application
+# APPLICATION PARAMETERS
 TILE_SIZE="512"
-
-#-----------------------------
-#     FOLDERS DEFINITION
-#-----------------------------
-export mvnRepoDir="~/.m2/repository"
-export WDir="/tmp/wDir"
-export masterDir="${WDir}/master" 
-export codeDir="${WDir}/project"
-
 
 # INITIAL PROFILE VALUES
 if [ "${TILE_SIZE}" = "128" ];then
@@ -82,24 +73,30 @@ if [ "${TILE_SIZE}" = "1024" ];then
 fi
 
 
-
-
 #-----------------------------
-#       COPY PROJECT
+#     FOLDERS DEFINITION
 #-----------------------------
-rm -rf ${WDir}
-mkdir -p ${WDir}/
-cp -r /tmp/WACCPD ${codeDir}
-cd ${codeDir}
+APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CURRENT_DIR=`pwd`
+cd ${APP_DIR}/../../runtime
+RUNTIME_DIR=`pwd`
+
+rm -rf /tmp/app
+rm -rf /tmp/runtime
+mkdir -p /tmp/app
+mkdir -p /tmp/
+cp -R ${RUNTIME_DIR} /tmp
+cp -R ${APP_DIR} /tmp/app
+ 
+rm -rf ${mvnRepoDir}/es/bsc
 
 
 #-----------------------------
 #       PREPARE Master
 #-----------------------------
-git co ${MASTER_BRANCH}
 echo "PREPARING MASTER"
 echo "    Preparing runtime"
-cd ${codeDir}/runtime 
+cd /tmp/runtime 
 
 #-----------------------------
 #       PREPARE CPU Platform
@@ -109,14 +106,14 @@ original="return new BackEndProxyInterface(\"CPU\", data, false);"
 replace="System.out.println(\"PROXIED CPU\");\n"
 replace="${replace}System.out.println(\"Management is also proxied\");\n"
 replace="${replace}return new BackEndProxyInterface(\"CPU\", data, true);"
-sed ":a;N;\$!ba;s/$original/$replace/" ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/cpuplatforms/CPUPlatform.java > tmpfile
-mv tmpfile ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/cpuplatforms/CPUPlatform.java
+sed ":a;N;\$!ba;s/$original/$replace/" /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/cpuplatforms/CPUPlatform.java > tmpfile
+mv tmpfile /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/cpuplatforms/CPUPlatform.java
 
 original="ComputingPlatformBackend cpuBackend = new CPUPlatformBackEnd(4, DATA_PROVIDER);"
 replace="ComputingPlatformBackend cpuBackend = new CPUPlatformBackEnd(${CPU_CORES}, DATA_PROVIDER);\n"
 replace="${replace}System.out.println(\"Runtime has CPU with ${CPU_CORES} cores\");"
-sed ":a;N;\$!ba;s/$original/$replace/" ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/Runtime.java > tmpfile
-mv tmpfile ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/Runtime.java
+sed ":a;N;\$!ba;s/$original/$replace/" /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/Runtime.java > tmpfile
+mv tmpfile /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/Runtime.java
 
 #-----------------------------
 #       PREPARE GPU Platform
@@ -126,8 +123,8 @@ original="return new BackEndProxyInterface(\"GPU\", new GPUDataProvider(data, on
 replace="System.out.println(\"PROXIED GPU\");\n"
 replace="${replace}System.out.println(\"Management is also proxied\");\n"
 replace="${replace}return new BackEndProxyInterface(\"GPU\", new GPUDataProvider(data, onCreationData), true);"
-sed ":a;N;\$!ba;s/$original/$replace/" ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/gpuplatforms/GPUPlatform.java > tmpfile
-mv tmpfile ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/gpuplatforms/GPUPlatform.java
+sed ":a;N;\$!ba;s/$original/$replace/" /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/gpuplatforms/GPUPlatform.java > tmpfile
+mv tmpfile /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/gpuplatforms/GPUPlatform.java
 
 
 #-----------------------------
@@ -170,9 +167,9 @@ extra="${extra}        }\n"
 extra="${extra}    }\n"
 extra="${extra}\n"
 
-sed ":a;N;\$!ba;s/$original/$extra\n$original/" ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/utils/ResourceManager.java > tmpfile
-mv tmpfile ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/utils/ResourceManager.java
-sed -i -e 's/load(rh);/loadDefaults(rh);/g' ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/utils/ResourceManager.java
+sed ":a;N;\$!ba;s/$original/$extra\n$original/" /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/utils/ResourceManager.java > tmpfile
+mv tmpfile /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/utils/ResourceManager.java
+sed -i -e 's/load(rh);/loadDefaults(rh);/g' /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/utils/ResourceManager.java
 
 #-----------------------------
 #       FIX SCHEDULING
@@ -185,8 +182,8 @@ sed -i -e 's/load(rh);/loadDefaults(rh);/g' ${codeDir}/runtime/runtime/master/sr
 # extra="${extra}        l.add(1);\n"
 # extra="${extra}        l.add(2);\n"
 # extra="${extra}        platformToTasks.put(\"GPU\", l);\n"
-# sed ":a;N;\$!ba;s/$original/$original\n$extra/" runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/StaticAssignationManager.java > tmpfile
-# mv tmpfile runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/StaticAssignationManager.java
+# sed ":a;N;\$!ba;s/$original/$original\n$extra/" /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/StaticAssignationManager.java > tmpfile
+# mv tmpfile /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/StaticAssignationManager.java
 
 #----------------------------------------------------------
 #       SETTING DYNAMIC POLICY WEIGHTS
@@ -197,40 +194,43 @@ if [ "${DYNAMIC_SCHEDULING_POLICY}" = "performance" ]; then
 else	
 	ENERGY_WEIGHT="5"
 fi
-sed -i -e 's/ private static final int ENERGY_WEIGHT = 10;/ private static final int ENERGY_WEIGHT = '${ENERGY_WEIGHT}';/g' ${codeDir}/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/ComputingPlatform.java
+sed -i -e 's/ private static final int ENERGY_WEIGHT = 10;/ private static final int ENERGY_WEIGHT = '${ENERGY_WEIGHT}';/g' /tmp/runtime/runtime/master/src/main/java/es/bsc/mobile/runtime/types/resources/ComputingPlatform.java
 
 #-----------------------------
 #       ARRAY ACCESS BUGFIX
 #-----------------------------
-sed -i -e 's/m.instrument(converter);//g' ${codeDir}/runtime/programmingModel/parallelizer/src/main/java/es/bsc/mobile/parallelizer/commands/Instrument.java
-
+sed -i -e 's/m.instrument(converter);//g' /tmp/runtime/programmingModel/parallelizer/src/main/java/es/bsc/mobile/parallelizer/commands/Instrument.java
 
 #-----------------------------
 #       COMPILE RUNTIME
 #-----------------------------
-rm -rf ${mvnRepoDir}/es/bsc
 echo "    Compiling runtime"
-cd ${codeDir}/runtime 
+cd /tmp/runtime 
 mvn -q -Dmaven.test.skip=true clean install
 
+#-----------------------------
+#     COMPILE APPLICATION
+#-----------------------------
 echo "    Compiling application"
-cd ${codeDir}/apps/BS
-sed -i -e 's/ private final int nTileSize = 16;/ private int nTileSize = '${TILE_SIZE}';/g' ${codeDir}/apps/BS/src/main/java/es/bsc/mobile/apps/bs/Params.java
-sed -i -e 's/ private final int outSizeI = 512;/ private int outSizeI = 1024;/g' ${codeDir}/apps/BS/src/main/java/es/bsc/mobile/apps/bs/Params.java
-sed -i -e 's/ private final int outSizeJ = 512;/ private int outSizeJ = 1024;/g' ${codeDir}/apps/BS/src/main/java/es/bsc/mobile/apps/bs/Params.java
+cd /tmp/app/BS
+sed -i -e 's/ private final int nTileSize = 16;/ private int nTileSize = '${TILE_SIZE}';/g' /tmp/app/BS/src/main/java/es/bsc/mobile/apps/bs/Params.java
+sed -i -e 's/ private final int outSizeI = 512;/ private int outSizeI = 1024;/g' /tmp/app/BS/src/main/java/es/bsc/mobile/apps/bs/Params.java
+sed -i -e 's/ private final int outSizeJ = 512;/ private int outSizeJ = 1024;/g' /tmp/app/BS/src/main/java/es/bsc/mobile/apps/bs/Params.java
 mvn -q -Dmaven.test.skip=true clean
+echo "    Compiling "
 mvn -q -Dmaven.test.skip=true compile
+echo "    Packaging"
 mvn -q -Dmaven.test.skip=true package
 
 #-----------------------------
 #       CLEAN WORKING DIR
 #-----------------------------
-adb shell rm /sdcard/COMPSs-Mobile/*.IT
+adb shell rm -rf /sdcard/COMPSs-Mobile/*.IT
 
 echo "    Preparing logcat"
-/home/flordan/Android/Android-4.4/sdk/platform-tools/adb logcat -c
+adb logcat -c
 time=`adb shell "date +\"%m-%d %H:%M:%S.000\"" |cut -c1-18`
-/usr/bin/konsole --new-tab --hold -e /home/flordan/Android/Android-4.4/sdk/platform-tools/adb logcat -v time -T "${time}" System.out:D *:S
+/usr/bin/konsole --new-tab --hold -e adb logcat -v raw -T "${time}" System.out:V *:S
 
 echo "    Launching application"
 mvn -q android:deploy
