@@ -54,6 +54,7 @@ public class RunTask extends ExecutorRequest {
 
     @Override
     public void dispatch(LinkedList<ComputingPlatform> platforms) {
+        long currentTime = System.currentTimeMillis();
         ExecutionScore bestScore = null;
         ComputingPlatform bestPlatform = null;
         TaskParameters tp = task.getTaskParams();
@@ -116,13 +117,13 @@ public class RunTask extends ExecutorRequest {
             dataName = ((WriteAccess) rp.getDAccess()).getWrittenDataInstance().getRenaming();
             outData.add(new TaskData(dataName, profile.getResultSize()));
         }
-
+        
         bestPlatform = StaticAssignationManager.getPredefinedPlatform(task);
 
         if (bestPlatform != null && !bestPlatform.canRun(task)) {
             bestPlatform = null;
         }
-        long currentTime = System.currentTimeMillis();
+
         if (bestPlatform == null) {
             for (ComputingPlatform cp : platforms) {
                 if (!cp.canRun(task)) {
@@ -137,7 +138,10 @@ public class RunTask extends ExecutorRequest {
                     }
                 }
             }
+        }else{
+            bestScore = bestPlatform.getExecutionForecast(task, currentTime, inData, outData);
         }
+
         if (bestPlatform != null) {
             Log.i(LOGGER_TAG, "Task " + task.getId() + " will run on computing platform " + bestPlatform.getName());
             bestPlatform.submitTask(task, bestScore, listener);
