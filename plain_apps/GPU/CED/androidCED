@@ -3,19 +3,24 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CURRENT_DIR=`pwd`
 
-echo "Compiling application"
-cd ${DIR}
+rm -rf /tmp/app
+mkdir -p /tmp/app
+cp -R ${DIR} /tmp/app
 
+cd /tmp/app/CED
+
+echo "Changing parameters ..."
 sed -i -e 's/ private int reps = 10;/ private int reps = 30;/g' src/main/java/es/bsc/mobile/apps/ced/Params.java
 
-
+echo "Compiling application"
 mvn -q -o -Dmaven.test.skip=true clean
 mvn -q -o -Dmaven.test.skip=true compile
 mvn -q -o -Dmaven.test.skip=true package
 
 echo "Preparing logcat"
-/home/flordan/Android/Android-4.4/sdk/platform-tools/adb logcat -c
-/usr/bin/konsole --new-tab --hold -e /home/flordan/Android/Android-4.4/sdk/platform-tools/adb logcat -v raw System.out:V *:S
+adb logcat -c
+time=`adb shell "date +\"%m-%d %H:%M:%S.000\"" |cut -c1-18`
+/usr/bin/konsole --new-tab --hold -e adb logcat -v raw -T "${time}" System.out:V *:S
 mvn android:deploy
 mvn android:run
 
